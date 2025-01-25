@@ -1,22 +1,33 @@
 using UnityEngine;
+using System.Collections;
 
-public class Powerups : MonoBehaviour
-{
+public class Powerups : MonoBehaviour {
     [SerializeField]
     private float _speed = 5f;
+    private float _powerupDuration = 5f;
+    Player player;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
+    void Start() {
+        player = GameObject.Find("Player").GetComponent<Player>();
     }
 
     // Update is called once per frame
-    void Update()
-    {
+    void Update() {
+        PowerupsBehavior();
+    }
+    void PowerupsBehavior() {
         transform.Translate(Vector3.down * Time.deltaTime * _speed);
-        if(transform.position.y< -5f)
-        {
-            Destroy(gameObject);   
+        if (transform.position.y < -5f) {
+            Destroy(gameObject);
         }
     }
+
+    private void OnTriggerEnter2D(Collider2D other) {
+        if (other.CompareTag("Player")) {
+            player.ActivateTrippleShot();
+            Destroy(gameObject);
+        }
+    }
+
+    
 }

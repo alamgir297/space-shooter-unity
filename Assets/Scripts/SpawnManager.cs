@@ -1,8 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class SpawnManager : MonoBehaviour
-{
+public class SpawnManager : MonoBehaviour {
     [SerializeField]
     private GameObject _enemyPrefab;
     [SerializeField]
@@ -10,49 +9,43 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     private float _enemySpawnRate = 5;
     [SerializeField]
-    private float _powerupSpawnRate = 7f;
-    [SerializeField]
     private GameObject _enemyContainer;
     [SerializeField]
     private GameObject _powerupsContainer;
     private bool _isSpawning = true;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
+    void Start() {
         StartCoroutine(SpawnEnemies());
-        StartCoroutine(SpawnPowerups());    
+        StartCoroutine(SpawnPowerups());
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        
+    void Update() {
+
     }
-    IEnumerator SpawnEnemies()
-    {
-        while (_isSpawning)
-        {
-            Vector3 position= new Vector3(Random.Range(-9.5f, 9.5f), 7, 0);
+    IEnumerator SpawnEnemies() {
+        while (_isSpawning) {
+            Vector3 position = new Vector3(Random.Range(-9.5f, 9.5f), 7, 0);
             GameObject newEnemy = Instantiate(_enemyPrefab, position, Quaternion.identity);
-            newEnemy.transform.parent= _enemyContainer.transform;
-            Debug.Log("creted :"+newEnemy.name);   
+            newEnemy.transform.parent = _enemyContainer.transform;
             yield return new WaitForSeconds(_enemySpawnRate);
 
         }
     }
 
-    IEnumerator SpawnPowerups()
-    {
-        while (true)
-        {
-            Vector3 position= new Vector3(Random.Range(-9, 9), 7, 0 );
+    IEnumerator SpawnPowerups() {
+        while (_isSpawning) {
+            Vector3 position = new Vector3(Random.Range(-8, 8), 7, 0);
             Instantiate(_trippleShotPrefab, position, Quaternion.identity);
-            yield return new WaitForSeconds(_powerupSpawnRate);
+            yield return new WaitForSeconds(PowerupsSpawnRate());
         }
     }
 
-    public void OnPlayerDeath()
-    {
+    private float PowerupsSpawnRate() {
+        return Random.Range(4, 8);
+    }
+
+    public void OnPlayerDeath() {
         _isSpawning = false;
     }
 }
