@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 
 public class Powerups : MonoBehaviour {
     [SerializeField]
@@ -24,10 +23,21 @@ public class Powerups : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D other) {
         if (other.CompareTag("Player")) {
-            player.ActivateTrippleShot();
-            Destroy(gameObject);
+            if (CompareTag("TrippleShot")) {
+                player.ActivatePowerupTrippleShot();
+                Destroy(gameObject);
+            }
+            if (CompareTag("SpeedBoost")) {
+                player.ActivatePowerupSpeedBoost();
+                Destroy(gameObject);
+            }
+            if (CompareTag("Shield")) {
+                player.ActivatePowerupShield();
+                Destroy(gameObject);
+            }
+            
         }
     }
 
-    
+
 }

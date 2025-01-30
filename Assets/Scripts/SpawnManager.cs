@@ -12,6 +12,8 @@ public class SpawnManager : MonoBehaviour {
     private GameObject _enemyContainer;
     [SerializeField]
     private GameObject _powerupsContainer;
+    [SerializeField]
+    private GameObject[] _powerupCollection;
     private bool _isSpawning = true;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
@@ -35,14 +37,19 @@ public class SpawnManager : MonoBehaviour {
 
     IEnumerator SpawnPowerups() {
         while (_isSpawning) {
+            int index = RandomPowerup();
             Vector3 position = new Vector3(Random.Range(-8, 8), 7, 0);
-            Instantiate(_trippleShotPrefab, position, Quaternion.identity);
+            Instantiate(_powerupCollection[index], position, Quaternion.identity);
             yield return new WaitForSeconds(PowerupsSpawnRate());
         }
     }
 
     private float PowerupsSpawnRate() {
         return Random.Range(4, 8);
+    }
+
+    private int RandomPowerup() {
+        return Random.Range(0, 3);
     }
 
     public void OnPlayerDeath() {

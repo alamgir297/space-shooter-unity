@@ -5,9 +5,11 @@ public class Enemy : MonoBehaviour {
     private float _enemySpeed = 5f;
     private Player Player;
     private Animator animator;
+    private UIManager _uiManager;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
         Player = GameObject.Find("Player").GetComponent<Player>();
+        _uiManager= GameObject.Find("Canvas").GetComponent<UIManager>();
         animator = GetComponent<Animator>();
     }
 
@@ -38,6 +40,7 @@ public class Enemy : MonoBehaviour {
 
         if (other.CompareTag("Laser")) {
             EnemyExplosion();
+            Player.PlayerScores(10);
             Destroy(gameObject, 1f);
             Destroy(other.gameObject);
         }
