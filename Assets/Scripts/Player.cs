@@ -3,7 +3,8 @@ using UnityEngine;
 public class Player : MonoBehaviour {
     //player property
     [SerializeField]
-    private float _playerSpeed = 10f;
+    private float _playerSpeed = 7.5f;
+    private float _speedMultiplier = 1.5f;
     [SerializeField]
     private int _playerHealth = 3;
     [SerializeField]
@@ -27,7 +28,8 @@ public class Player : MonoBehaviour {
     //animation
     private UIManager _uiManager;
     Animator animator;
-    private Coroutine _currentRoutine;
+    [SerializeField]
+    GameObject _shieldEffect;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
@@ -117,9 +119,12 @@ public class Player : MonoBehaviour {
 
     //player gets hit by obstacles
     public void PlayerTakeDamage() {
-        if (!_isShieldActive) {
-            _playerHealth--;
+        if (_isShieldActive) {
+            _isShieldActive = false;
+            _shieldEffect.SetActive(false);
+            return;
         }
+        _playerHealth--;
            
         _uiManager.UpdateLives(_playerHealth);
         if (_playerHealth <= 0) {
@@ -131,38 +136,31 @@ public class Player : MonoBehaviour {
     //player hit powerups
     public void ActivatePowerupTrippleShot() {
         _isTripleShotActive = true;
-        CheckNStartCoroutine();
+        StartCoroutine(TripleShotCoroutine());
     }
     public void ActivatePowerupSpeedBoost() {
         _isSpeedBoostActive = true;
-        _playerSpeed = 15;
-        CheckNStartCoroutine();
+        _playerSpeed= (_playerSpeed * _speedMultiplier) <= 20 ? _playerSpeed *= _speedMultiplier : _playerSpeed;
+
+        StartCoroutine(SpeedBoostCoroutine());
     }
     public void ActivatePowerupShield() {
         _isShieldActive = true;
-        animator.SetBool("shield", true);
-        CheckNStartCoroutine();
+        _shieldEffect.SetActive(true);
+        StartCoroutine(ShieldCoroutine());
     }
-    
-    IEnumerator PowerupCoroutine() {
+    IEnumerator TripleShotCoroutine() {
         yield return new WaitForSeconds(5f);
-        if (_isTripleShotActive) {
-            _isTripleShotActive = false;
-        }
-        if (_isSpeedBoostActive) {
-            _playerSpeed = 10;
-        }
-        if (_isShieldActive) {
-            _isShieldActive = false;
-            animator.SetBool("shield", false);
-        }
+        _isTripleShotActive = false;
     }
-
-    void CheckNStartCoroutine() {
-        if (_currentRoutine!=null) {
-            StopCoroutine(_currentRoutine);
-        }
-        _currentRoutine = StartCoroutine(PowerupCoroutine());
+    IEnumerator SpeedBoostCoroutine() {
+        yield return new WaitForSeconds(5f);
+        _playerSpeed = 10f;
+    }
+    IEnumerator ShieldCoroutine() {
+        yield return new WaitForSeconds(5f);
+        _isShieldActive = false;
+        _shieldEffect.SetActive(false);
     }
     
     //movement animation

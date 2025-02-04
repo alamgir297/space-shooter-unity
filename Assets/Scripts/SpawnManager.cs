@@ -44,8 +44,7 @@ public class SpawnManager : MonoBehaviour {
             int index = RandomPowerup();
             Vector3 position = new Vector3(Random.Range(-8, 8), 7, 0);
             Instantiate(_powerupCollection[index], position, Quaternion.identity);
-            float spawnTime = EnemySpawnRate();
-            yield return new WaitForSeconds(spawnTime);
+            yield return new WaitForSeconds(PowerupsSpawnRate());
         }
     }
 
@@ -59,8 +58,8 @@ public class SpawnManager : MonoBehaviour {
     float EnemySpawnRate() {
         int elapsedTime = (int) Time.time;
         //Debug.Log("elt; " + elapsedTime);
-        if (elapsedTime % 10 == 0) {
-            float multiplier = elapsedTime / 10;
+        if (elapsedTime % 15 == 0) {
+            float multiplier = elapsedTime / 15;
             float factor = _decRate * multiplier;
             if (_enemySpawnRate - factor >= 2) {
                 _enemySpawnRate -= factor;
