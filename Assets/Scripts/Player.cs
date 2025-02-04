@@ -64,7 +64,6 @@ public class Player : MonoBehaviour {
         //inputs
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
-        Debug.Log("horizontalInput: " + horizontalInput);
         // activate moving animation
         if (Mathf.Abs(horizontalInput) > 0.01f) {
             if (horizontalInput > 0.01f) {
@@ -176,7 +175,6 @@ public class Player : MonoBehaviour {
         animator.SetBool("movingLeft", true);
     }
     void PlayerIdle() {
-        Debug.Log("called idle");
         animator.SetBool("movingRight", false);
         animator.SetBool("movingLeft", false);
     }
