@@ -1,16 +1,21 @@
 using UnityEngine;
 
 public class Enemy : MonoBehaviour {
-    [SerializeField]
-    private float _enemySpeed = 5f;
-    private Player Player;
-    private Animator animator;
+    private Player _player;
+    private Animator _animator;
     private UIManager _uiManager;
+    private AudioSource _enemyAudio;
+
+
+    [SerializeField] private float _enemySpeed = 5f;
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
-        Player = GameObject.Find("Player").GetComponent<Player>();
-        _uiManager= GameObject.Find("Canvas").GetComponent<UIManager>();
-        animator = GetComponent<Animator>();
+        _player = GameObject.Find("Player").GetComponent<Player>();
+        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
+        _animator = GetComponent<Animator>();
+        _enemyAudio = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -27,10 +32,12 @@ public class Enemy : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D other) {
         if (other.CompareTag("Player")) {
-            //Player = other.gameObject.GetComponent<Player>();
-            if (Player != null) {
-                Player.PlayerTakeDamage();
+            //_player = other.gameObject.GetComponent<_player>();
+            if (_player != null) {
+                _player.PlayerTakeDamage();
                 EnemyExplosion();
+                _enemyAudio.Play();
+                Destroy(GetComponent<Collider2D>());
                 Destroy(this.gameObject, 1f);
             }
             else {
@@ -40,7 +47,9 @@ public class Enemy : MonoBehaviour {
 
         if (other.CompareTag("Laser")) {
             EnemyExplosion();
-            Player.PlayerScores(10);
+            _enemyAudio.Play();
+            _player.PlayerScores(10);
+            Destroy(GetComponent<Collider2D>());
             Destroy(gameObject, 1f);
             Destroy(other.gameObject);
         }
@@ -48,7 +57,6 @@ public class Enemy : MonoBehaviour {
 
     void EnemyExplosion() {
         _enemySpeed = 0f;
-        animator.SetTrigger("EnemyHit");
+        _animator.SetTrigger("EnemyHit");
     }
-
 }

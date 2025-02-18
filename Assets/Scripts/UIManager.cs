@@ -1,24 +1,28 @@
-using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class UIManager : MonoBehaviour {
-    [SerializeField]
-    private Image _liveImage;
-    [SerializeField]
-    private Sprite[] _liveSprites;
-    [SerializeField]
-    private Text _scoreText;
-    [SerializeField]
-    private Text _elapsedTime;
+    
+    SpawnManager _spawnManager;
+    
+    
+    [SerializeField] private Image _liveImage;
+    [SerializeField] private Sprite[] _liveSprites;
+    [SerializeField] private TextMeshProUGUI _scoreText;
+    [SerializeField] private TextMeshProUGUI _elapsedTime;
+    [SerializeField] private Text _gameOver;
+    
     void Start() {
+        _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
         _liveImage.sprite = _liveSprites[3];
+        StartCoroutine(UpdateTimeRoutine());
     }
 
     // Update is called once per frame
     void Update() {
-        UpdateTime();
+        //UpdateTime();
     }
 
     public void UpdateScore(int score) {
@@ -29,12 +33,16 @@ public class UIManager : MonoBehaviour {
         _liveImage.sprite = _liveSprites[(currentLive)];
     }
 
-    public void UpdateTime() {
-        string timeText;
-        float passedTime = Time.time;
-        int min = (int) passedTime / 60;
-        int sec = (int)passedTime % 60;
-        timeText = "" + min + ":" + sec;
-        _elapsedTime.text = timeText;
+    IEnumerator UpdateTimeRoutine() {
+        while (!_spawnManager.GameOver()) {
+            int min = (int)Time.timeSinceLevelLoad / 60;
+            int sec = (int)Time.timeSinceLevelLoad % 60;
+            _elapsedTime.text = min + ":" + sec;
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    public void ShowGameOver(int score) {
+        _gameOver.text = "Game Over\n" + "Your Score: " + score;
     }
 }

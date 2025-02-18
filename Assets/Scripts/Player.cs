@@ -1,22 +1,22 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 public class Player : MonoBehaviour {
     //player property
-    [SerializeField]
-    private float _playerSpeed = 7.5f;
-    private float _speedMultiplier = 1.5f;
-    [SerializeField]
-    private int _playerHealth = 3;
-    [SerializeField]
-    private int _playerScore  = 0;
+    private float _speedMultiplier;
+    [SerializeField] private float _playerSpeed;
+    [SerializeField] private int _playerHealth;
+    [SerializeField] private int _playerScore;
+
+    //player boundaries
+    private const float upper = 0f;
+    private const float lower = -4.8f;
+    private const float side = 10.4f;
 
     //spawns
-    private SpawnManager spawnManager;
-    [SerializeField]
-    GameObject _laserNormal;
-    [SerializeField]
-    GameObject _laserTrippleShot;
-    [SerializeField]
+    private SpawnManager _spawnManager;
+    [SerializeField] GameObject _laserNormal;
+    [SerializeField] GameObject _laserTrippleShot;
 
     //fire
     private float _fireRate = 0.5f;
@@ -24,24 +24,39 @@ public class Player : MonoBehaviour {
     private bool _isTripleShotActive = false;
     private bool _isSpeedBoostActive = false;
     private bool _isShieldActive = false;
-   
+
     //animation
     private UIManager _uiManager;
-    Animator animator;
-    [SerializeField]
-    GameObject _shieldEffect;
+    Animator _animator;
+    [SerializeField] GameObject _shieldEffect;
+    [SerializeField] GameObject _thrusterEffect;
+    [SerializeField] GameObject _gameOver;
+    [SerializeField] GameObject _leftEngine, _rightEngine;
+
+    //Audio
+    private AudioSource _playerAudio;
+    [SerializeField] private AudioClip _laserShotAudio;
+    [SerializeField] private AudioClip _powerupCollectionAudio;
+    [SerializeField] private AudioClip _explosionAudio;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
         transform.position = new Vector3(0, 0, 0);
-        spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
-        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
-        animator = GetComponent<Animator>();
 
-        if (spawnManager == null) {
+        _playerScore = 0;
+        _playerHealth = 3;
+        _playerSpeed = 7.5f;
+        _speedMultiplier = 1.5f;
+
+        _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
+        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
+        _animator = GetComponent<Animator>();
+        _playerAudio = GetComponent<AudioSource>();
+
+        if (_spawnManager == null) {
             Debug.Log("not found");
         }
-        if(_uiManager== null) {
+        if (_uiManager == null) {
             Debug.Log("Not found");
         }
 
@@ -53,13 +68,13 @@ public class Player : MonoBehaviour {
         PlayerBoundaries();
         PlayerMovement();
         if (Input.GetKeyDown(KeyCode.Space) && Time.time >= _canFire) {
-            //PlayerFireLaser();
             if (_isTripleShotActive) {
                 PlayerFireLaser(_laserTrippleShot);
             }
             else {
                 PlayerFireLaser(_laserNormal);
             }
+            _playerAudio.PlayOneShot(_laserShotAudio);
         }
     }
     void PlayerMovement() {
@@ -78,17 +93,12 @@ public class Player : MonoBehaviour {
         else {
             PlayerIdle();
         }
-        
+
         Vector3 direction = new Vector3(horizontalInput, verticalInput, 0);
         transform.Translate(direction * _playerSpeed * Time.deltaTime);
     }
 
-    void PlayerBoundaries() {
-        //player boundaries
-        float upper = 0f;
-        float lower = -5f;
-        float side = 11f;
-
+    void PlayerBoundaries() { 
         //defines the boundary
         if (transform.position.y > upper) {
             transform.position = new Vector3(transform.position.x, upper, 0);
@@ -125,27 +135,35 @@ public class Player : MonoBehaviour {
             return;
         }
         _playerHealth--;
-           
+        if (_playerHealth == 2) _leftEngine.SetActive(true);
+        else _rightEngine.SetActive(true);
         _uiManager.UpdateLives(_playerHealth);
         if (_playerHealth <= 0) {
-            Destroy(gameObject);
-            spawnManager.OnPlayerDeath();
+            _playerAudio.PlayOneShot(_explosionAudio);
+            Destroy(gameObject,0.7f);
+            _spawnManager.OnPlayerDeath();
+            _uiManager.ShowGameOver(_playerScore);
+            _gameOver.SetActive(true);
         }
     }
 
     //player hit powerups
     public void ActivatePowerupTrippleShot() {
         _isTripleShotActive = true;
+        _playerAudio.PlayOneShot(_powerupCollectionAudio);
         StartCoroutine(TripleShotCoroutine());
     }
     public void ActivatePowerupSpeedBoost() {
         _isSpeedBoostActive = true;
-        _playerSpeed= (_playerSpeed * _speedMultiplier) <= 20 ? _playerSpeed *= _speedMultiplier : _playerSpeed;
+        _thrusterEffect.SetActive(true);
+        _playerAudio.PlayOneShot(_powerupCollectionAudio);
+        _playerSpeed = (_playerSpeed * _speedMultiplier) <= 20 ? _playerSpeed *= _speedMultiplier : _playerSpeed;
 
         StartCoroutine(SpeedBoostCoroutine());
     }
     public void ActivatePowerupShield() {
         _isShieldActive = true;
+        _playerAudio.PlayOneShot(_powerupCollectionAudio);
         _shieldEffect.SetActive(true);
         StartCoroutine(ShieldCoroutine());
     }
@@ -156,25 +174,26 @@ public class Player : MonoBehaviour {
     IEnumerator SpeedBoostCoroutine() {
         yield return new WaitForSeconds(5f);
         _playerSpeed = 10f;
+        _thrusterEffect.SetActive(false);
     }
     IEnumerator ShieldCoroutine() {
         yield return new WaitForSeconds(5f);
         _isShieldActive = false;
         _shieldEffect.SetActive(false);
     }
-    
+
     //movement animation
     void PlayerMovingRight() {
-        animator.SetBool("movingRight", true);
-        animator.SetBool("movingLeft", false);
+        _animator.SetBool("movingRight", true);
+        _animator.SetBool("movingLeft", false);
     }
     void PlayerMovingLeft() {
-        animator.SetBool("movingRight", false);
-        animator.SetBool("movingLeft", true);
+        _animator.SetBool("movingRight", false);
+        _animator.SetBool("movingLeft", true);
     }
     void PlayerIdle() {
-        animator.SetBool("movingRight", false);
-        animator.SetBool("movingLeft", false);
+        _animator.SetBool("movingRight", false);
+        _animator.SetBool("movingLeft", false);
     }
 
 }

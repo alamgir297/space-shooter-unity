@@ -1,40 +1,43 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
+
+
 
 public class SpawnManager : MonoBehaviour {
-    [SerializeField]
-    private GameObject _enemyPrefab;
-    [SerializeField]
-    private GameObject _trippleShotPrefab;
-    [SerializeField]
     private float _enemySpawnRate;
-    [SerializeField]
-    private GameObject _enemyContainer;
-    [SerializeField]
-    private GameObject _powerupsContainer;
-    [SerializeField]
-    private GameObject[] _powerupCollection;
+    private float _spawnRateChangeInterval;
     private float _decRate = 0.25f;
-    
-    private bool _isSpawning = true;
+    private float _minSpawnRate = 1f;
+    private bool _isSpawning;
+
+    [SerializeField] private GameObject _enemyPrefab;
+    [SerializeField] private GameObject _trippleShotPrefab;
+    [SerializeField] private GameObject _enemyContainer;
+    [SerializeField] private GameObject _powerupsContainer;
+    [SerializeField] private GameObject[] _powerupCollection;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
-        StartCoroutine(SpawnEnemies());
-        StartCoroutine(SpawnPowerups());
         _enemySpawnRate = 5f;
+        _spawnRateChangeInterval = 5;
+        _isSpawning = true;
+        StartCoroutine(SpawnEnemies());
+        StartCoroutine(SpawnRateCoroutine());
+        StartCoroutine(SpawnPowerups());
+
     }
 
     // Update is called once per frame
     void Update() {
-    
+
     }
+
     IEnumerator SpawnEnemies() {
         while (_isSpawning) {
             Vector3 position = new Vector3(Random.Range(-9.5f, 9.5f), 7, 0);
             GameObject newEnemy = Instantiate(_enemyPrefab, position, Quaternion.identity);
             newEnemy.transform.parent = _enemyContainer.transform;
-            yield return new WaitForSeconds(EnemySpawnRate());
+            yield return new WaitForSeconds(_enemySpawnRate);
 
         }
     }
@@ -48,29 +51,30 @@ public class SpawnManager : MonoBehaviour {
         }
     }
 
+    IEnumerator SpawnRateCoroutine() {
+        while (_isSpawning) {
+            yield return new WaitForSeconds(_spawnRateChangeInterval);
+            if (_enemySpawnRate - _decRate >= _minSpawnRate) {
+                _enemySpawnRate -= _decRate;
+                Debug.Log("spawn rate: " + _enemySpawnRate);
+
+            }
+        }
+    }
+
     private float PowerupsSpawnRate() {
-        return Random.Range(4, 8);
+        return Random.Range(4, 6);
     }
 
     private int RandomPowerup() {
         return Random.Range(0, 3);
     }
-    float EnemySpawnRate() {
-        int elapsedTime = (int) Time.time;
-        //Debug.Log("elt; " + elapsedTime);
-        if (elapsedTime % 15 == 0) {
-            float multiplier = elapsedTime / 15;
-            float factor = _decRate * multiplier;
-            if (_enemySpawnRate - factor >= 2) {
-                _enemySpawnRate -= factor;
-                Debug.Log("spawn rate: " + _enemySpawnRate);
-                return _enemySpawnRate;
-            }
-        }
-        return _enemySpawnRate;
-    }
     public void OnPlayerDeath() {
         _isSpawning = false;
+        Destroy(_enemyContainer);
     }
-   
+    public bool GameOver() {
+        return _isSpawning ? false : true;
+    }
+
 }

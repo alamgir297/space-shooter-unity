@@ -35,7 +35,7 @@ public class Powerups : MonoBehaviour {
                 player.ActivatePowerupShield();
                 Destroy(gameObject);
             }
-            
+
         }
     }
 
