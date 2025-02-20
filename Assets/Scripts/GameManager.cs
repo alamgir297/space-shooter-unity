@@ -2,15 +2,17 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 public class GameManager : MonoBehaviour {
-    private int _mainGameScenIndex;
-    private int _mainmenuSceneIndex;
+    
     private bool _isGameOver = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
-        _mainGameScenIndex = 1;
-        _mainmenuSceneIndex = 0;
+
     }
 
     // Update is called once per frame
@@ -19,9 +21,18 @@ public class GameManager : MonoBehaviour {
     }
 
     public void StartNewGame() {
-        SceneManager.LoadScene(_mainGameScenIndex);
+        SceneManager.LoadScene(1);
     }
-
+    public void BackToMain() {
+        SceneManager.LoadScene(0);
+    }
+    public void Exit() {
+        #if UNITY_EDITOR
+                EditorApplication.ExitPlaymode();
+        #else
+                Application.Exit();
+        #endif
+    }
     public void GameOver() {
         _isGameOver = true;
     }

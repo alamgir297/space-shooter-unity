@@ -13,16 +13,20 @@ public class UIManager : MonoBehaviour {
     [SerializeField] private TextMeshProUGUI _scoreText;
     [SerializeField] private TextMeshProUGUI _elapsedTime;
     [SerializeField] private Text _gameOver;
+    [SerializeField] private GameObject _pauseMenuUi;
     
     void Start() {
         _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
         _liveImage.sprite = _liveSprites[3];
+        Time.timeScale = 1;
         StartCoroutine(UpdateTimeRoutine());
     }
 
     // Update is called once per frame
     void Update() {
-        //UpdateTime();
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            TogglePauseMenu();
+        }
     }
 
     public void UpdateScore(int score) {
@@ -44,5 +48,16 @@ public class UIManager : MonoBehaviour {
 
     public void ShowGameOver(int score) {
         _gameOver.text = "Game Over\n" + "Your Score: " + score;
+    }
+
+    void TogglePauseMenu() {
+        if (Time.timeScale == 1) {
+            Time.timeScale = 0;
+            _pauseMenuUi.SetActive(true);
+        }
+        else {
+            Time.timeScale = 1;
+            _pauseMenuUi.SetActive(false);
+        }
     }
 }

@@ -2,11 +2,12 @@ using UnityEngine;
 
 public class Powerups : MonoBehaviour {
     [SerializeField]
-    private float _speed = 5f;
+    private float _speed;
     private float _powerupDuration = 5f;
     Player player;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
+        _speed = 7f;
         player = GameObject.Find("Player").GetComponent<Player>();
     }
 

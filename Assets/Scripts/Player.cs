@@ -10,7 +10,7 @@ public class Player : MonoBehaviour {
 
     //player boundaries
     private const float upper = 0f;
-    private const float lower = -4.8f;
+    private const float lower = -2f;
     private const float side = 10.4f;
 
     //spawns
@@ -19,7 +19,7 @@ public class Player : MonoBehaviour {
     [SerializeField] GameObject _laserTrippleShot;
 
     //fire
-    private float _fireRate = 0.5f;
+    private float _fireRate = 0.3f;
     private float _canFire = -1f;
     private bool _isTripleShotActive = false;
     private bool _isSpeedBoostActive = false;
@@ -45,8 +45,8 @@ public class Player : MonoBehaviour {
 
         _playerScore = 0;
         _playerHealth = 3;
-        _playerSpeed = 7.5f;
-        _speedMultiplier = 1.5f;
+        _playerSpeed = 10f;
+        _speedMultiplier = 1.3f;
 
         _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
         _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
@@ -140,7 +140,7 @@ public class Player : MonoBehaviour {
         _uiManager.UpdateLives(_playerHealth);
         if (_playerHealth <= 0) {
             _playerAudio.PlayOneShot(_explosionAudio);
-            Destroy(gameObject,0.7f);
+            Destroy(gameObject,0.5f);
             _spawnManager.OnPlayerDeath();
             _uiManager.ShowGameOver(_playerScore);
             _gameOver.SetActive(true);

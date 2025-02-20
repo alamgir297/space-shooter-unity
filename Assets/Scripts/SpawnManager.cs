@@ -18,8 +18,8 @@ public class SpawnManager : MonoBehaviour {
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
-        _enemySpawnRate = 5f;
-        _spawnRateChangeInterval = 5;
+        _enemySpawnRate = 4f;
+        _spawnRateChangeInterval = 7;
         _isSpawning = true;
         StartCoroutine(SpawnEnemies());
         StartCoroutine(SpawnRateCoroutine());
@@ -56,8 +56,6 @@ public class SpawnManager : MonoBehaviour {
             yield return new WaitForSeconds(_spawnRateChangeInterval);
             if (_enemySpawnRate - _decRate >= _minSpawnRate) {
                 _enemySpawnRate -= _decRate;
-                Debug.Log("spawn rate: " + _enemySpawnRate);
-
             }
         }
     }
