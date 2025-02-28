@@ -8,6 +8,7 @@
 /[Bb]uild/
 /[Bb]uilds/
 /[Ll]ogs/
+/[Ww]ebGL/
 /[Uu]ser[Ss]ettings/
 
 # MemoryCaptures can get excessive in size.
@@ -67,6 +68,9 @@ crashlytics-build.properties
 
 # Packed Addressables
 /[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+
+# Ignore ZIP files
+*.zip
 
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta

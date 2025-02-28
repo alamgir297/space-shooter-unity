@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -30,7 +29,7 @@ public class GameManager : MonoBehaviour {
         #if UNITY_EDITOR
                 EditorApplication.ExitPlaymode();
         #else
-                Application.Exit();
+                Application.Quit();
         #endif
     }
     public void GameOver() {
