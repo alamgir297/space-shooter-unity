@@ -2,7 +2,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
 public class UIManager : MonoBehaviour {
     
     SpawnManager _spawnManager;
@@ -14,6 +13,7 @@ public class UIManager : MonoBehaviour {
     [SerializeField] private TextMeshProUGUI _elapsedTime;
     [SerializeField] private Text _gameOver;
     [SerializeField] private GameObject _pauseMenuUi;
+    [SerializeField] private TextMeshProUGUI _highScoreText;
     
     void Start() {
         _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
@@ -27,10 +27,17 @@ public class UIManager : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.Escape)) {
             TogglePauseMenu();
         }
+        ShowHighScore();
     }
 
     public void UpdateScore(int score) {
         _scoreText.text = "Score: " + score;
+    }
+
+    public void ShowHighScore() {
+        string name = GameManager.Instance.GetPlayerName();
+        int score = GameManager.Instance.GetHighScore();
+        _highScoreText.text = "" + name + ": " + score;
     }
 
     public void UpdateLives(int currentLive) {
@@ -59,5 +66,11 @@ public class UIManager : MonoBehaviour {
             Time.timeScale = 1;
             _pauseMenuUi.SetActive(false);
         }
+    }
+    public void MainMenu() {
+        GameManager.Instance.BackToMain();
+    }
+    public void Restart() {
+        GameManager.Instance.StartNewGame();
     }
 }

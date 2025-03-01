@@ -19,7 +19,7 @@ public class Player : MonoBehaviour {
     [SerializeField] GameObject _laserTrippleShot;
 
     //fire
-    private float _fireRate = 0.3f;
+    private float _fireRate = 0.2f;
     private float _canFire = -1f;
     private bool _isTripleShotActive = false;
     private bool _isSpeedBoostActive = false;
@@ -143,6 +143,8 @@ public class Player : MonoBehaviour {
             Destroy(gameObject,0.5f);
             _spawnManager.OnPlayerDeath();
             _uiManager.ShowGameOver(_playerScore);
+            GameManager.Instance.SetHighScore(_playerScore);
+            GameManager.Instance.SavePlayer();
             _gameOver.SetActive(true);
         }
     }
