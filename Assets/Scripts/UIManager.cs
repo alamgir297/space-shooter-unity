@@ -14,11 +14,15 @@ public class UIManager : MonoBehaviour {
     [SerializeField] private Text _gameOver;
     [SerializeField] private GameObject _pauseMenuUi;
     [SerializeField] private TextMeshProUGUI _highScoreText;
+    [SerializeField] private AudioSource audioSource;
     
     void Start() {
         _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
         _liveImage.sprite = _liveSprites[3];
         Time.timeScale = 1;
+
+        SetSoundVolume();
+
         StartCoroutine(UpdateTimeRoutine());
     }
 
@@ -41,11 +45,12 @@ public class UIManager : MonoBehaviour {
     }
 
     public void UpdateLives(int currentLive) {
-        _liveImage.sprite = _liveSprites[(currentLive)];
+        if(currentLive< _liveSprites.Length)
+            _liveImage.sprite = _liveSprites[(currentLive)];
     }
 
     IEnumerator UpdateTimeRoutine() {
-        while (!_spawnManager.GameOver()) {
+        while (!GameManager.Instance.IsGameOver()) {
             int min = (int)Time.timeSinceLevelLoad / 60;
             int sec = (int)Time.timeSinceLevelLoad % 60;
             _elapsedTime.text = min + ":" + sec;
@@ -72,5 +77,8 @@ public class UIManager : MonoBehaviour {
     }
     public void Restart() {
         GameManager.Instance.StartNewGame();
+    }
+    void SetSoundVolume() {
+        audioSource.volume = GameManager.Instance.GetSoundVolume();
     }
 }

@@ -5,21 +5,21 @@ public class Player : MonoBehaviour {
     //player property
     private float _speedMultiplier;
     [SerializeField] private float _playerSpeed;
-    [SerializeField] private int _playerHealth;
-    [SerializeField] private int _playerScore;
+    private int _playerHealth;
+    private int _playerScore;
 
     //player boundaries
     private const float upper = 0f;
     private const float lower = -2f;
-    private const float side = 10.4f;
-
+    private const float side = 9.4f;
+    
     //spawns
     private SpawnManager _spawnManager;
     [SerializeField] GameObject _laserNormal;
     [SerializeField] GameObject _laserTrippleShot;
 
     //fire
-    private float _fireRate = 0.2f;
+    private float _fireRate = 0.15f;
     private float _canFire = -1f;
     private bool _isTripleShotActive = false;
     private bool _isSpeedBoostActive = false;
@@ -41,12 +41,7 @@ public class Player : MonoBehaviour {
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
-        transform.position = new Vector3(0, 0, 0);
-
-        _playerScore = 0;
-        _playerHealth = 3;
-        _playerSpeed = 10f;
-        _speedMultiplier = 1.3f;
+        InitializePlayer();
 
         _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
         _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
@@ -67,6 +62,7 @@ public class Player : MonoBehaviour {
     void Update() {
         PlayerBoundaries();
         PlayerMovement();
+        //fire laser
         if (Input.GetKeyDown(KeyCode.Space) && Time.time >= _canFire) {
             if (_isTripleShotActive) {
                 PlayerFireLaser(_laserTrippleShot);
@@ -76,6 +72,14 @@ public class Player : MonoBehaviour {
             }
             _playerAudio.PlayOneShot(_laserShotAudio);
         }
+    }
+
+    void InitializePlayer() {
+        transform.position = new Vector3(0, 0, 0);
+        _playerScore = 0;
+        _playerHealth = 3;
+        _playerSpeed = 7f;
+        _speedMultiplier = 1.5f;
     }
     void PlayerMovement() {
         //inputs
@@ -108,10 +112,10 @@ public class Player : MonoBehaviour {
         }
 
         if (transform.position.x > side) {
-            transform.position = new Vector3(-1 * side, transform.position.y, 0);
+            transform.position = new Vector3(side, transform.position.y, 0);
         }
         if (transform.position.x < -1 * side) {
-            transform.position = new Vector3(side, transform.position.y, 0);
+            transform.position = new Vector3(-1*side, transform.position.y, 0);
         }
     }
 
@@ -138,7 +142,7 @@ public class Player : MonoBehaviour {
         if (_playerHealth == 2) _leftEngine.SetActive(true);
         else _rightEngine.SetActive(true);
         _uiManager.UpdateLives(_playerHealth);
-        if (_playerHealth <= 0) {
+        if (_playerHealth < 1) {
             _playerAudio.PlayOneShot(_explosionAudio);
             Destroy(gameObject,0.5f);
             _spawnManager.OnPlayerDeath();
@@ -159,7 +163,7 @@ public class Player : MonoBehaviour {
         _isSpeedBoostActive = true;
         _thrusterEffect.SetActive(true);
         _playerAudio.PlayOneShot(_powerupCollectionAudio);
-        _playerSpeed = (_playerSpeed * _speedMultiplier) <= 20 ? _playerSpeed *= _speedMultiplier : _playerSpeed;
+        _playerSpeed *= _speedMultiplier;
 
         StartCoroutine(SpeedBoostCoroutine());
     }
@@ -175,7 +179,7 @@ public class Player : MonoBehaviour {
     }
     IEnumerator SpeedBoostCoroutine() {
         yield return new WaitForSeconds(5f);
-        _playerSpeed = 10f;
+        _playerSpeed/=_speedMultiplier;
         _thrusterEffect.SetActive(false);
     }
     IEnumerator ShieldCoroutine() {

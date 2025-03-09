@@ -9,15 +9,21 @@ public class EndlessBgEffect : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        _movingSpeed = 7f;
-        _initialPosition = transform.position;
         _bgHeight = GetComponent<BoxCollider2D>().size.y / 2;
+
+        _movingSpeed = 9f;
+        _initialPosition = transform.position;
+
+        GameManager.Instance.SetGameActive(false);
     }
 
     // Update is called once per frame
     void Update()
     {
-        MoveBgDown();
+        
+        if (!GameManager.Instance.IsGameOver() && GameManager.Instance.IsGameActive()) {
+            MoveBgDown();
+        }
         if (transform.position.y < _initialPosition.y - _bgHeight) {
             ResetBg();
         }

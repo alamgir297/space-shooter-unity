@@ -7,7 +7,7 @@ public class Powerups : MonoBehaviour {
     Player player;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
-        _speed = 7f;
+        _speed = 9f;
         player = GameObject.Find("Player").GetComponent<Player>();
     }
 

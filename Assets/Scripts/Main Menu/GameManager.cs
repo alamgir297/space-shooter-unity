@@ -8,30 +8,35 @@ using UnityEditor;
 
 public class GameManager : MonoBehaviour {
 
-    public static GameManager Instance;
-    private bool _isGameOver = false;
+    public string path;
+    private bool _isGameOver;
+    private bool _isGameActive;
     private string _playerName;
     private int _highestScore;
+    private float _soundVolume;
 
+    public static GameManager Instance; //{ get; private set; }
 
-    [SerializeField] private Button _startGameButton;
-    [SerializeField] private Button _quitButton;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
-        _startGameButton.onClick.AddListener(StartNewGame);
-        _quitButton.onClick.AddListener(Exit);
+        _isGameOver = false;
+        _isGameActive = false;
         LoadPlayer();
+        SetSoundVolume(0.5f);
     }
 
+    //singleton pattern
     private void Awake() {
-        if (Instance != null && Instance!=this) {
+        if (Instance != null) {
             Destroy(gameObject);
             return;
         }
         Instance = this;
+        path = Application.persistentDataPath + "savefile.json";
         DontDestroyOnLoad(gameObject);
     }
 
+    // Encapsulation
     public string GetPlayerName() {
         return _playerName;
     }
@@ -47,7 +52,15 @@ public class GameManager : MonoBehaviour {
             _highestScore = highScore;
         }
     }
+    public void SetSoundVolume(float volume) {
+        _soundVolume = volume;
+    }
+    public float GetSoundVolume() {
+        return _soundVolume;
+    }
 
+
+    //game states
     public void StartNewGame() {
         SceneManager.LoadScene(1);
     }
@@ -61,13 +74,24 @@ public class GameManager : MonoBehaviour {
                 Application.Quit();
         #endif
     }
-    public void GameOver() {
-        _isGameOver = true;
+
+    //game controls
+    public void GameOver(bool isGameOver) {
+        _isGameOver = isGameOver;
     }
     public bool IsGameOver() {
         return _isGameOver ? true : false;
     }
+    public bool IsGameActive() {
+        return _isGameActive ? true : false;
+    }
+    public void SetGameActive(bool val) {
+        _isGameActive = val;
+    }
 
+
+
+    //data persistence
     [System.Serializable]
     private class SaveData {
         public string name;
@@ -80,17 +104,30 @@ public class GameManager : MonoBehaviour {
         data.hightScore = _highestScore;
 
         string json = JsonUtility.ToJson(data);
-        File.WriteAllText(Application.persistentDataPath+ "savefile.json", json);
+        File.WriteAllText(path, json);
     }
 
     public void LoadPlayer() {
-        string path = Application.persistentDataPath + "savefile.json";
         if (File.Exists(path)) {
             string json = File.ReadAllText(path);
             SaveData data = JsonUtility.FromJson<SaveData>(json);
             _playerName = data.name;
             _highestScore = data.hightScore;
         }
+        else ResetPlayer();
+    }
+
+    public void ResetPlayer() {
+        _playerName = "Not set";
+        _highestScore = 0;
+        SavePlayer();
+    }
+
+    public bool IsPlayerExist() {
+        if(_playerName== "Not set" || _playerName=="" ||!File.Exists(path)) {
+            return false;
+        }
+        return true;
     }
 
 }
