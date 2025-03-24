@@ -11,12 +11,16 @@ public class UIManager : MonoBehaviour {
     [SerializeField] private Sprite[] _liveSprites;
     [SerializeField] private TextMeshProUGUI _scoreText;
     [SerializeField] private TextMeshProUGUI _elapsedTime;
-    [SerializeField] private Text _gameOver;
+    [SerializeField] private Text _gameOverText;
+    [SerializeField] private GameObject _gameOverPanel;
     [SerializeField] private GameObject _pauseMenuUi;
     [SerializeField] private TextMeshProUGUI _highScoreText;
     [SerializeField] private AudioSource audioSource;
+    [SerializeField] private GameObject _touchControls;
     
     void Start() {
+        //EnableTouchControls(IsMobilePlatform());
+
         _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
         _liveImage.sprite = _liveSprites[3];
         Time.timeScale = 1;
@@ -32,6 +36,12 @@ public class UIManager : MonoBehaviour {
             TogglePauseMenu();
         }
         ShowHighScore();
+    }
+    private bool IsMobilePlatform() {
+        if (Application.isMobilePlatform) {
+            Debug.Log("Mobile platform");
+        }
+        return Application.isMobilePlatform;
     }
 
     public void UpdateScore(int score) {
@@ -59,9 +69,13 @@ public class UIManager : MonoBehaviour {
     }
 
     public void ShowGameOver(int score) {
-        _gameOver.text = "Game Over\n" + "Your Score: " + score;
+        _gameOverPanel.SetActive(true);
+        _gameOverText.text = "Game Over\n" + "Your Score: " + score;
     }
 
+    private void EnableTouchControls(bool isMobile) {
+        _touchControls.SetActive(isMobile);
+    }
     void TogglePauseMenu() {
         if (Time.timeScale == 1) {
             Time.timeScale = 0;

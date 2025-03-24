@@ -94,7 +94,7 @@ public class MainMenuUIManager : MonoBehaviour {
     }
 
     //settings options
-    void ToggleSettings() {
+    public void ToggleSettings() {
         if (!_isSettingsEnabled) {
             settingsOptions.SetActive(true);
             mainOptions.SetActive(false);

@@ -7,7 +7,7 @@ public class SpawnManager : MonoBehaviour {
     private float _enemySpawnRate;
     private float _spawnRateChangeInterval;
     private float _decRate = 0.25f;
-    private float _minSpawnRate = 2f;
+    private float _minSpawnRate = 1.25f;
     private bool _isSpawning;
 
     [SerializeField] private GameObject _enemyPrefab;
@@ -19,7 +19,7 @@ public class SpawnManager : MonoBehaviour {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
         _enemySpawnRate = 5f;
-        _spawnRateChangeInterval = 10;
+        _spawnRateChangeInterval = 8;
         GameManager.Instance.GameOver(false);
     }
 

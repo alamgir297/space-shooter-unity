@@ -1,109 +1,122 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
+
 public class Player : MonoBehaviour {
-    //player property
-    private float _speedMultiplier;
-    [SerializeField] private float _playerSpeed;
+    //inputs
+    private const float _movementEpsilon = 1e-3f;
+    private InputAction _move;
+    private InputAction _fire;
+    [SerializeField] private InputSystem_Actions _playerControls;
+
+    // Player properties
+    private float _currentSpeed;
     private int _playerHealth;
     private int _playerScore;
+    [SerializeField] private float _playerSpeed = 7f;
 
-    //player boundaries
+    // Player boundaries
     private const float upper = 0f;
     private const float lower = -2f;
     private const float side = 9.4f;
-    
-    //spawns
+
+    // Spawns
     private SpawnManager _spawnManager;
-    [SerializeField] GameObject _laserNormal;
-    [SerializeField] GameObject _laserTrippleShot;
+    private PowerupManager _powerupManager;
+    [SerializeField] private GameObject _laserNormal;
+    [SerializeField] private GameObject _laserTrippleShot;
 
-    //fire
-    private float _fireRate = 0.15f;
+    // Fire
+    private float _fireRate = 0.1f;
     private float _canFire = -1f;
-    private bool _isTripleShotActive = false;
-    private bool _isSpeedBoostActive = false;
-    private bool _isShieldActive = false;
 
-    //animation
+    // Animation
     private UIManager _uiManager;
-    Animator _animator;
-    [SerializeField] GameObject _shieldEffect;
-    [SerializeField] GameObject _thrusterEffect;
-    [SerializeField] GameObject _gameOver;
-    [SerializeField] GameObject _leftEngine, _rightEngine;
+    private PlayerAnimation _playerAnimation;
 
-    //Audio
+    // Audio
     private AudioSource _playerAudio;
     [SerializeField] private AudioClip _laserShotAudio;
     [SerializeField] private AudioClip _powerupCollectionAudio;
     [SerializeField] private AudioClip _explosionAudio;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private void Awake() {
+        _playerControls = new InputSystem_Actions();
+    }
     void Start() {
         InitializePlayer();
 
         _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
         _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
-        _animator = GetComponent<Animator>();
+        _playerAnimation = GetComponent<PlayerAnimation>();
+        _powerupManager = GetComponent<PowerupManager>();
         _playerAudio = GetComponent<AudioSource>();
 
         if (_spawnManager == null) {
-            Debug.Log("not found");
+            Debug.LogError("Spawn Manager not found.");
         }
         if (_uiManager == null) {
-            Debug.Log("Not found");
+            Debug.LogError("UI Manager not found.");
         }
 
         _uiManager.UpdateScore(0);
     }
 
-    // Update is called once per frame
     void Update() {
         PlayerBoundaries();
         PlayerMovement();
-        //fire laser
-        if (Input.GetKeyDown(KeyCode.Space) && Time.time >= _canFire) {
-            if (_isTripleShotActive) {
+    }
+    private void OnEnable() {
+        _move = _playerControls.Player.Move;
+        _move.Enable();
+
+        _fire = _playerControls.Player.Attack;
+        _fire.Enable();
+        _fire.performed += Fire;
+    }
+    private void OnDisable() {
+        _move.Disable();
+        _fire.Disable();
+    }
+    void InitializePlayer() {
+        transform.position = new Vector3(0, 0, 0);
+        _playerScore = 0;
+        _playerHealth = 3;
+        _currentSpeed = _playerSpeed;
+    }
+
+    void PlayerMovement() {
+
+        Vector2 direction = _move.ReadValue<Vector2>().normalized;
+        // Activate moving animation
+        if (Mathf.Abs(direction.x) > _movementEpsilon) {
+            if (direction.x > 0) {
+                _playerAnimation.PlayerMovingRight();
+            }
+            else {
+                _playerAnimation.PlayerMovingLeft();
+            }
+        }
+        else {
+            _playerAnimation.PlayerIdle();
+        }
+
+        transform.Translate(_currentSpeed * Time.deltaTime * direction);
+    }
+    public void Fire(InputAction.CallbackContext contex) {
+        if (Time.time >= _canFire) {
+            if (_powerupManager.IsTripleShotActive()) {
                 PlayerFireLaser(_laserTrippleShot);
             }
             else {
                 PlayerFireLaser(_laserNormal);
             }
-            _playerAudio.PlayOneShot(_laserShotAudio);
+            PlaySound(_laserShotAudio);
         }
     }
 
-    void InitializePlayer() {
-        transform.position = new Vector3(0, 0, 0);
-        _playerScore = 0;
-        _playerHealth = 3;
-        _playerSpeed = 7f;
-        _speedMultiplier = 1.5f;
-    }
-    void PlayerMovement() {
-        //inputs
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
-        // activate moving animation
-        if (Mathf.Abs(horizontalInput) > 0.01f) {
-            if (horizontalInput > 0.01f) {
-                PlayerMovingRight();
-            }
-            if (horizontalInput < 0.01f) {
-                PlayerMovingLeft();
-            }
-        }
-        else {
-            PlayerIdle();
-        }
-
-        Vector3 direction = new Vector3(horizontalInput, verticalInput, 0);
-        transform.Translate(direction * _playerSpeed * Time.deltaTime);
-    }
-
-    void PlayerBoundaries() { 
-        //defines the boundary
+    void PlayerBoundaries() {
+        // Define the boundary
         if (transform.position.y > upper) {
             transform.position = new Vector3(transform.position.x, upper, 0);
         }
@@ -115,11 +128,10 @@ public class Player : MonoBehaviour {
             transform.position = new Vector3(side, transform.position.y, 0);
         }
         if (transform.position.x < -1 * side) {
-            transform.position = new Vector3(-1*side, transform.position.y, 0);
+            transform.position = new Vector3(-1 * side, transform.position.y, 0);
         }
     }
 
-    //firing mechanism
     void PlayerFireLaser(GameObject laser) {
         Instantiate(laser, transform.position + new Vector3(0, 1f, 0), Quaternion.identity);
         _canFire = Time.time;
@@ -131,75 +143,29 @@ public class Player : MonoBehaviour {
         _uiManager.UpdateScore(_playerScore);
     }
 
-    //player gets hit by obstacles
     public void PlayerTakeDamage() {
-        if (_isShieldActive) {
-            _isShieldActive = false;
-            _shieldEffect.SetActive(false);
+        if (_powerupManager.IsShieldActive()) {
+            _powerupManager.SetShieldActive(false);
             return;
         }
+
         _playerHealth--;
-        if (_playerHealth == 2) _leftEngine.SetActive(true);
-        else _rightEngine.SetActive(true);
+        _playerAnimation.ActivateEngineDamage(_playerHealth); // Activate engine damage effects
         _uiManager.UpdateLives(_playerHealth);
+
         if (_playerHealth < 1) {
-            _playerAudio.PlayOneShot(_explosionAudio);
-            Destroy(gameObject,0.5f);
+            PlaySound(_explosionAudio);
+            Destroy(gameObject, 0.5f);
             _spawnManager.OnPlayerDeath();
             _uiManager.ShowGameOver(_playerScore);
             GameManager.Instance.SetHighScore(_playerScore);
             GameManager.Instance.SavePlayer();
-            _gameOver.SetActive(true);
         }
     }
-
-    //player hit powerups
-    public void ActivatePowerupTrippleShot() {
-        _isTripleShotActive = true;
-        _playerAudio.PlayOneShot(_powerupCollectionAudio);
-        StartCoroutine(TripleShotCoroutine());
+    public void SetSpeedBoost(float multiplier) {
+        _currentSpeed = _playerSpeed * multiplier;
     }
-    public void ActivatePowerupSpeedBoost() {
-        _isSpeedBoostActive = true;
-        _thrusterEffect.SetActive(true);
-        _playerAudio.PlayOneShot(_powerupCollectionAudio);
-        _playerSpeed *= _speedMultiplier;
-
-        StartCoroutine(SpeedBoostCoroutine());
+    public void PlaySound(AudioClip clip) {
+        _playerAudio.PlayOneShot(clip);
     }
-    public void ActivatePowerupShield() {
-        _isShieldActive = true;
-        _playerAudio.PlayOneShot(_powerupCollectionAudio);
-        _shieldEffect.SetActive(true);
-        StartCoroutine(ShieldCoroutine());
-    }
-    IEnumerator TripleShotCoroutine() {
-        yield return new WaitForSeconds(5f);
-        _isTripleShotActive = false;
-    }
-    IEnumerator SpeedBoostCoroutine() {
-        yield return new WaitForSeconds(5f);
-        _playerSpeed/=_speedMultiplier;
-        _thrusterEffect.SetActive(false);
-    }
-    IEnumerator ShieldCoroutine() {
-        yield return new WaitForSeconds(5f);
-        _isShieldActive = false;
-        _shieldEffect.SetActive(false);
-    }
-
-    //movement animation
-    void PlayerMovingRight() {
-        _animator.SetBool("movingRight", true);
-        _animator.SetBool("movingLeft", false);
-    }
-    void PlayerMovingLeft() {
-        _animator.SetBool("movingRight", false);
-        _animator.SetBool("movingLeft", true);
-    }
-    void PlayerIdle() {
-        _animator.SetBool("movingRight", false);
-        _animator.SetBool("movingLeft", false);
-    }
-
 }
