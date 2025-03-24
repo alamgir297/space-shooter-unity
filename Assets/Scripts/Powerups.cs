@@ -1,9 +1,9 @@
 using UnityEngine;
 
 public class Powerups : MonoBehaviour {
-    [SerializeField]
-    private float _speed;
-    private float _powerupDuration = 5f;
+
+    [SerializeField] private PowerupType _powerupType;
+    [SerializeField] private float _speed;
     Player player;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start() {
@@ -24,21 +24,33 @@ public class Powerups : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D other) {
         if (other.CompareTag("Player")) {
-            if (CompareTag("TrippleShot")) {
-                player.ActivatePowerupTrippleShot();
-                Destroy(gameObject);
+            PowerupManager powerupManager = other.GetComponent<PowerupManager>();
+            if (powerupManager != null) {
+                powerupManager.ActivatePowerup(_powerupType);
             }
-            if (CompareTag("SpeedBoost")) {
-                player.ActivatePowerupSpeedBoost();
-                Destroy(gameObject);
-            }
-            if (CompareTag("Shield")) {
-                player.ActivatePowerupShield();
-                Destroy(gameObject);
-            }
+            Destroy(gameObject);
+
+            //if (CompareTag("TrippleShot")) {
+            //    player.ActivatePowerupTrippleShot();
+            //    Destroy(gameObject);
+            //}
+            //if (CompareTag("SpeedBoost")) {
+            //    player.ActivatePowerupSpeedBoost();
+            //    Destroy(gameObject);
+            //}
+            //if (CompareTag("Shield")) {
+            //    player.ActivatePowerupShield();
+            //    Destroy(gameObject);
+            //}
 
         }
     }
 
 
+}
+
+public enum PowerupType {
+    TripleShot,
+    SpeedBoost,
+    Shield
 }
